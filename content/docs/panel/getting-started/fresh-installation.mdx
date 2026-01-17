@@ -59,6 +59,157 @@ apt update
 
 # Install Dependencies
 apt -y install php8.3 php8.3-{common,cli,gd,mysql,mbstring,bcmath,xml,fpm,curl,zip} mariadb-server nginx tar unzip git redis-server
+
+```bash
+curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+```
+
+## Download Files
+
+```bash
+mkdir -p /var/www/reviactyl
+cd /var/www/reviactyl
+```
+
+```bash
+curl -Lo panel.tar.gz https://github.com/reviactyl/panel/releases/latest/download/panel.tar.gz
+tar -xzvf panel.tar.gz
+chmod -R 755 storage/* bootstrap/cache/
+```
+
+## Installation
+
+<Callout type="info" title="Database Configuration">
+  You will need a database setup and a user with the correct permissions created for that database before continuing.  
+
+  ```bash
+  # MariaDB (v11.0.0+)
+  mariadb -u root -p
+
+  # MySQL
+  mysql -u root -p
+  ```
+It's mandatory to use a secure password. Generate one at https://www.avast.com/random-password-generator
+  ```sql
+  CREATE USER 'kifzl-x-pterodactyl'@'127.0.0.1' IDENTIFIED BY 'yourPassword';
+  CREATE DATABASE panel;
+  GRANT ALL PRIVILEGES ON panel.* TO 'kifzl-x-pterodactyl'@'127.0.0.1' WITH GRANT OPTION;
+  exit
+  ```
+</Callout>
+
+```bash
+cp .env.example .env
+COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+php artisan key:generate --force
+```
+
+<Callout type="warning" title="Backup Your APP_KEY">
+  Back up your encryption key (`APP_KEY` in the `.env` file).  
+  If you lose it, all encrypted data is irrecoverable, even with database backups.
+
+  ```bash
+  grep APP_KEY /var/www/reviactly/.env
+  ```
+</Callout>
+
+## Environment Configuration
+
+```bash
+php artisan p:environment:setup
+php artisan p:environment:database
+php artisan p:environment:mail
+```
+
+## Database Setup
+
+```bash
+php artisan migrate --seed --force
+```
+
+## Create your First User
+
+```bash
+php artisan p:user:make
+```
+
+## Set Permissions
+
+```bash
+# If using NGINX, Apache or Caddy (not on RHEL / Rocky Linux / AlmaLinux)
+chown -R www-data:www-data /var/www/reviactyl/*
+
+# If using NGINX on RHEL / Rocky Linux / AlmaLinux
+chown -R nginx:nginx /var/www/reviactyl/*
+
+# If using Apache on RHEL / Rocky Linux / AlmaLinux
+chown -R apache:apache /var/www/reviactyl/*
+```
+
+## Queue Listeners
+
+#### Crontab Configuration
+
+```bash
+* * * * * php /var/www/reviactyl/artisan schedule:run >> /dev/null 2>&1
+```
+
+### Create Queue Worker
+
+```ini
+# /etc/systemd/system/reviq.service
+[Unit]
+Description=Reviactyl Queue Worker
+After=redis-server.service
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/reviactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+StartLimitInterval=180
+StartLimitBurst=30
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+<Callout type="info">
+If you are using RHEL, Rocky Linux, or AlmaLinux, replace `redis-server.service` with `redis.service`.  
+If you are not using Redis, remove the `After=` line.
+</Callout>
+
+```bash
+sudo systemctl enable --now redis-server
+sudo systemctl enable --now reviq.service
+```
+- Redis (`redis-server`)
+- A webserver (Apache, NGINX, Caddy, etc.)
+- `curl`
+- `tar`
+- `unzip`
+- `git`
+- `composer` v2
+
+#### Example Dependency Installation
+
+```bash
+# Add "add-apt-repository" command
+apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg
+
+# Add additional repositories for PHP (Ubuntu 22.04)
+LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+
+# Add Redis official APT repository
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+# Update repositories list
+apt update
+
+# Install Dependencies
+apt -y install php8.3 php8.3-{common,cli,gd,mysql,mbstring,bcmath,xml,fpm,curl,zip} mariadb-server nginx tar unzip git redis-server
 ```
 
 ## Installing Composer
