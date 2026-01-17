@@ -1,0 +1,11 @@
+{
+  "title": "Blueprint",
+  "description": "Blueprint port for Kifzl X Pterodactyl",
+  "icon": "blueprint",
+  "pages": [
+    "---Guides---",
+    "index",
+    "installing-blueprint"
+  ],
+  "root": true
+}

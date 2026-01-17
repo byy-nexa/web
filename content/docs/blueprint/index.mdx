@@ -1,0 +1,48 @@
+---
+title: Getting Started
+icon: Book
+---
+
+<Callout type="warning" title="Before following this guide">
+  We expect you to have **Kifzl X Pterodactyl v2.2.0** or **Pterodactyl v1.12.x** installed before following this guide.
+  After that, you can run the following guide.
+</Callout>
+
+## Install the correct Panel
+First, we need Kifzl X Pterodactyl version that's compatible with rBlueprint.
+
+```bash
+# Before that, we need to clear up any existing files.
+cd /var/www/kifzl-x-pterodactyl # Kifzl X Pterodactyl installation path
+rm -rf *
+
+# Download file archive from GitHub
+curl -Lo panel.tar.gz https://github.com/kifzl-x-pterodactyl/panel/releases/download/v2.1.2/panel.tar.gz
+
+# Extract the archive
+tar -xzvf panel.tar.gz
+chmod -R 755 storage/* bootstrap/cache/
+
+```
+
+## Install Dependencies
+```bash
+COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+```
+
+## Run Database Migrations
+```bash
+php artisan migrate --seed --force
+```
+
+## Set permissions
+```bash
+# If using NGINX, Apache or Caddy (not on RHEL / Rocky Linux / AlmaLinux)
+chown -R www-data:www-data /var/www/kifzl-x-pterodactyl/*
+
+# If using NGINX on RHEL / Rocky Linux / AlmaLinux
+chown -R nginx:nginx /var/www/kifzl-x-pterodactyl/*
+
+# If using Apache on RHEL / Rocky Linux / AlmaLinux
+chown -R apache:apache /var/www/kifzl-x-pterodactyl/*
+```
