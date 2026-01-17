@@ -5,7 +5,6 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
-  allowedDevOrigins: ['*'],
 };
 
 export default withMDX(config);
