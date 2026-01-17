@@ -10,7 +10,7 @@ Define your panel directory, we'll use this later in the guide. If your Kifzl X 
 ```bash
 # Use this command to set a $PTERODACTYL_DIRECTORY variable
 # for use later in this guide.
-export PTERODACTYL_DIRECTORY=/var/www/kifzl-x-pterodactyl
+export PTERODACTYL_DIRECTORY=/var/www/reviactyl
 ```
 
 ## Download and install Blueprint
@@ -20,11 +20,11 @@ Download the latest version of Blueprint onto your server by either downloading 
 # Install curl, wget and unzip if you haven't already
 sudo apt install -y curl wget unzip
 
-# Navigate to your Kifzl X Pterodactyl directory
+# Navigate to your Reviactyl directory
 cd $PTERODACTYL_DIRECTORY
 
 # Download and unzip Blueprint's latest release
-wget "$(curl -s https://api.github.com/repos/kifzl-x-pterodactyl/blueprint/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)" -O "$PTERODACTYL_DIRECTORY/release.zip"
+wget "$(curl -s https://api.github.com/repos/reviactyl/blueprint/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)" -O "$PTERODACTYL_DIRECTORY/release.zip"
 unzip -o release.zip
 ```
 
