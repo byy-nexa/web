@@ -8,7 +8,7 @@ If you ever encounter an unexpected error with the Panel the first thing you wil
 To retrieve these, simply execute the command below which will output the last 100 lines of the Panel's log file.
 
 ``` bash
-tail -n 100 /var/www/kifzl-x-pterodactyl/storage/logs/laravel-$(date +%F).log
+tail -n 100 /var/www/reviactyl/storage/logs/laravel-$(date +%F).log
 ```
 
 ### Parsing the Error
@@ -53,7 +53,7 @@ If you're trying to go through a bunch of errors quickly, you can use the comman
 be the actual error lines, without all of the stack traces.
 
 ``` bash
-tail -n 1000 /var/www/kifzl-x-pterodactyl/storage/logs/laravel-$(date +%F).log | grep "\[$(date +%Y)"
+tail -n 1000 /var/www/reviactyl/storage/logs/laravel-$(date +%F).log | grep "\[$(date +%Y)"
 ```
 
 ## Cannot Connect to Server Errors
@@ -139,11 +139,29 @@ If this returns different DNS Servers than 1.1.1.1 and 1.0.0.1 you'll need to ed
 ## Schedule Troubleshooting
 - Check logs from your queue manager ``journalctl -xeu reviq``
 - Restart reviq ``systemctl restart reviq``
-- Clear schedule cache ``php /var/www/kifzl-x-pterodactyl/artisan schedule:clear-cache``
-- Check your php version ``php -v`` - [this page](https://kifzl-x-pterodactyl.dev/docs/panel/updating-the-panel#panel-version-requirements) will tell you what versions of php are supported by what versions of the panel
+- Clear schedule cache ``php /var/www/reviactly/artisan schedule:clear-cache``
+- Check your php version ``php -v`` - [this page](https://reviactly.dev/docs/panel/updating-the-panel#panel-version-requirements) will tell you what versions of php are supported by what versions of the panel
 - Check your crontab syntax using https://crontab.guru - make sure it's what you intended
 - Verify the problem is with the schedule and not with the tasks you have set up (Set the first task in your schedule to something you know prints a message in the console, ie. run ``say test`` in the console for a Minecraft server, if the text "test" shows up in the console successfully, set the first task to ``say test`` so you know if it runs
 - Are your tasks off by a bit? Make sure you on the latest version of the panel? In version 1.11.5 there was a fix for schedules running at the wrong time. Alternatively, you may have the wrong timezone set. Make sure your timezones all match.
+ - System Timezone ``timedatectl``
+ - Panel Timezone ``nano /var/www/reviactly/.env``
+ - Wings Timezone (Passed to containers as the TZ environmental variable, unrelated to schedules but while you're checking timezones you may as well set this too) ``nano /etc/pterodactyl/config.yml``
+- Check your database where schedules are stored - MariaDB by default
+ - ``systemctl status mariadb`` - if it's not active, ``journalctl -xeu mariadb``
+- Check queue handler - Redis by default
+ - ``systemctl status redis`` - if it's not active, ``journalctl -xeu redis`` (On some distributions the service will be named ``redis-server`` instead)
+- Check for panel errors ``tail -n 150 /var/www/reviactly/storage/logs/laravel-$(date +%F).log | nc pteropaste.com 99``
+
+## FirewallD issues
+If you are on a RHEL/CentOS server with `firewalld` installed you may have broken DNS.
+
+```
+firewall-cmd --permanent --zone=trusted --change-interface=pterodactyl0
+firewall-cmd --reload
+```
+
+Restart `docker` and `wings` after running these to be sure the rules are applied.test version of the panel? In version 1.11.5 there was a fix for schedules running at the wrong time. Alternatively, you may have the wrong timezone set. Make sure your timezones all match.
  - System Timezone ``timedatectl``
  - Panel Timezone ``nano /var/www/kifzl-x-pterodactyl/.env``
  - Wings Timezone (Passed to containers as the TZ environmental variable, unrelated to schedules but while you're checking timezones you may as well set this too) ``nano /etc/pterodactyl/config.yml``
